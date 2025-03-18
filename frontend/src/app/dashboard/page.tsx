@@ -3,181 +3,261 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { authService } from '../services/authService';
-import { motion } from 'framer-motion';
 
 interface Course {
   id: number;
   title: string;
   description: string;
   instructor: string;
-  progress: number;
+  thumbnail: string;
+  category: string;
+  price: number;
+  rating: number;
+  studentsEnrolled: number;
+  duration: string;
+  level: 'Beginner' | 'Intermediate' | 'Advanced';
+  progress?: number;
 }
 
 export default function DashboardPage() {
   const router = useRouter();
   const [isDarkMode, setIsDarkMode] = useState(false);
+  const [activeTab, setActiveTab] = useState<'enrolled' | 'explore'>('enrolled');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('All');
+
+  const categories = [
+    'All',
+    'Programming',
+    'Design',
+    'Business',
+    'Marketing',
+    'Music',
+    'Photography'
+  ];
+
+  const mockCourses: Course[] = [
+    {
+      id: 1,
+      title: "Complete Web Development Bootcamp",
+      description: "Learn full-stack web development from scratch. Covers HTML, CSS, JavaScript, React, Node.js, and more.",
+      instructor: "Dr. Angela Yu",
+      thumbnail: "https://source.unsplash.com/random/800x600/?coding",
+      category: "Programming",
+      price: 99.99,
+      rating: 4.8,
+      studentsEnrolled: 150000,
+      duration: "63h 30m",
+      level: "Beginner",
+      progress: 45
+    },
+    {
+      id: 2,
+      title: "UI/UX Design Masterclass",
+      description: "Master the art of user interface and user experience design. Learn Figma, design principles, and more.",
+      instructor: "Sarah Wilson",
+      thumbnail: "https://source.unsplash.com/random/800x600/?design",
+      category: "Design",
+      price: 89.99,
+      rating: 4.7,
+      studentsEnrolled: 75000,
+      duration: "42h 15m",
+      level: "Intermediate",
+      progress: 72
+    },
+    // Add more mock courses...
+  ];
+
   const [enrolledCourses, setEnrolledCourses] = useState<Course[]>([]);
-  const [recommendedCourses, setRecommendedCourses] = useState<Course[]>([]);
+  const [exploreCourses, setExploreCourses] = useState<Course[]>([]);
 
   useEffect(() => {
-    // Check system preference for dark mode
     if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
       setIsDarkMode(true);
     }
     
-    // Mock data setup...
-    setEnrolledCourses([/* your existing mock data */]);
-    setRecommendedCourses([/* your existing mock data */]);
+    // Simulate API calls
+    setEnrolledCourses(mockCourses.slice(0, 3));
+    setExploreCourses(mockCourses);
   }, []);
 
-  const toggleDarkMode = () => setIsDarkMode(!isDarkMode);
+  const filteredCourses = exploreCourses.filter(course => {
+    const matchesSearch = course.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                         course.instructor.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesCategory = selectedCategory === 'All' || course.category === selectedCategory;
+    return matchesSearch && matchesCategory;
+  });
 
   return (
-    <div className={`min-h-screen transition-colors duration-300 ${isDarkMode ? 'bg-gray-900 text-white' : 'bg-gray-100 text-gray-900'}`}>
+    <div className={`min-h-screen transition-colors duration-300 ${
+      isDarkMode ? 'bg-gray-900 text-white' : 'bg-gray-100 text-gray-900'
+    }`}>
+      {/* Navigation */}
       <nav className={`${isDarkMode ? 'bg-gray-800' : 'bg-white'} shadow-lg sticky top-0 z-50`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16">
-            <motion.div 
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              className="flex items-center"
-            >
+            <div className="flex items-center">
               <h1 className="text-2xl font-bold">E-Learning Dashboard</h1>
-            </motion.div>
+            </div>
             <div className="flex items-center space-x-4">
               <button
-                onClick={toggleDarkMode}
-                className={`p-2 rounded-full ${isDarkMode ? 'bg-gray-700 text-yellow-400' : 'bg-gray-200 text-gray-800'}`}
+                onClick={() => setIsDarkMode(!isDarkMode)}
+                className={`p-2 rounded-full ${
+                  isDarkMode ? 'bg-gray-700 text-yellow-400' : 'bg-gray-200 text-gray-800'
+                }`}
               >
                 {isDarkMode ? '🌙' : '☀️'}
               </button>
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
+              <button
                 onClick={() => {
                   authService.logout();
                   router.push('/login');
                 }}
                 className={`px-4 py-2 rounded-lg font-medium ${
                   isDarkMode 
-                    ? 'bg-red-600 hover:bg-red-700 text-white' 
-                    : 'bg-red-500 hover:bg-red-600 text-white'
-                }`}
+                    ? 'bg-red-600 hover:bg-red-700' 
+                    : 'bg-red-500 hover:bg-red-600'
+                } text-white transition-all duration-300 hover:scale-105`}
               >
                 Logout
-              </motion.button>
+              </button>
             </div>
           </div>
         </div>
       </nav>
 
+      {/* Main Content */}
       <main className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
-        {/* Enrolled Courses Section */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="mb-8"
-        >
-          <h2 className="text-2xl font-bold mb-6">My Courses</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {enrolledCourses.map((course, index) => (
-              <motion.div
-                key={course.id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.1 }}
-                whileHover={{ scale: 1.02 }}
-                className={`rounded-xl shadow-lg overflow-hidden ${
-                  isDarkMode ? 'bg-gray-800' : 'bg-white'
-                }`}
-              >
-                <div className="p-6">
-                  <h3 className="text-lg font-semibold mb-2">{course.title}</h3>
-                  <p className={`mb-4 ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
-                    {course.description}
-                  </p>
-                  <p className={`text-sm mb-3 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                    Instructor: {course.instructor}
-                  </p>
-                  <div className="relative pt-1">
-                    <div className="flex mb-2 items-center justify-between">
-                      <span className={`text-xs font-semibold inline-block ${
-                        isDarkMode ? 'text-blue-400' : 'text-blue-600'
-                      }`}>
-                        Progress: {course.progress}%
-                      </span>
+        {/* Tabs */}
+        <div className="flex space-x-4 mb-6">
+          <button
+            onClick={() => setActiveTab('enrolled')}
+            className={`px-4 py-2 rounded-lg font-medium transition-all duration-300 ${
+              activeTab === 'enrolled'
+                ? isDarkMode 
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-blue-500 text-white'
+                : isDarkMode
+                  ? 'bg-gray-800 text-gray-300 hover:bg-gray-700'
+                  : 'bg-white text-gray-600 hover:bg-gray-50'
+            }`}
+          >
+            My Courses
+          </button>
+          <button
+            onClick={() => setActiveTab('explore')}
+            className={`px-4 py-2 rounded-lg font-medium transition-all duration-300 ${
+              activeTab === 'explore'
+                ? isDarkMode 
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-blue-500 text-white'
+                : isDarkMode
+                  ? 'bg-gray-800 text-gray-300 hover:bg-gray-700'
+                  : 'bg-white text-gray-600 hover:bg-gray-50'
+            }`}
+          >
+            Explore Courses
+          </button>
+        </div>
+
+        {/* Search and Filter (for Explore tab) */}
+        {activeTab === 'explore' && (
+          <div className="mb-6 space-y-4">
+            <input
+              type="text"
+              placeholder="Search courses..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className={`w-full px-4 py-2 rounded-lg ${
+                isDarkMode 
+                  ? 'bg-gray-800 text-white'
+                  : 'bg-white text-gray-900'
+              } border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500`}
+            />
+            <div className="flex flex-wrap gap-2">
+              {categories.map(category => (
+                <button
+                  key={category}
+                  onClick={() => setSelectedCategory(category)}
+                  className={`px-3 py-1 rounded-full text-sm font-medium transition-all duration-300 ${
+                    selectedCategory === category
+                      ? isDarkMode 
+                        ? 'bg-blue-600 text-white'
+                        : 'bg-blue-500 text-white'
+                      : isDarkMode
+                        ? 'bg-gray-800 text-gray-300 hover:bg-gray-700'
+                        : 'bg-white text-gray-600 hover:bg-gray-50'
+                  }`}
+                >
+                  {category}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Course Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {(activeTab === 'enrolled' ? enrolledCourses : filteredCourses).map((course, index) => (
+            <div
+              key={course.id}
+              className={`rounded-xl shadow-lg overflow-hidden transform transition-all duration-300 hover:scale-105 ${
+                isDarkMode ? 'bg-gray-800' : 'bg-white'
+              }`}
+            >
+              <img 
+                src={course.thumbnail} 
+                alt={course.title}
+                className="w-full h-48 object-cover"
+              />
+              <div className="p-6">
+                <div className="flex justify-between items-start mb-2">
+                  <h3 className="text-lg font-semibold">{course.title}</h3>
+                  <span className={`px-2 py-1 rounded text-xs font-medium ${
+                    isDarkMode ? 'bg-gray-700' : 'bg-gray-100'
+                  }`}>
+                    {course.level}
+                  </span>
+                </div>
+                <p className={`mb-4 text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+                  {course.description}
+                </p>
+                <div className={`text-sm mb-4 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                  <p>Instructor: {course.instructor}</p>
+                  <p>Duration: {course.duration}</p>
+                  <p>Students: {course.studentsEnrolled.toLocaleString()}</p>
+                </div>
+                {course.progress !== undefined && (
+                  <div className="mb-4">
+                    <div className="flex justify-between text-sm mb-1">
+                      <span>Progress</span>
+                      <span>{course.progress}%</span>
                     </div>
-                    <div className={`overflow-hidden h-2 mb-4 text-xs flex rounded ${
-                      isDarkMode ? 'bg-gray-700' : 'bg-blue-200'
-                    }`}>
-                      <motion.div
-                        initial={{ width: 0 }}
-                        animate={{ width: `${course.progress}%` }}
-                        transition={{ duration: 1, ease: "easeOut" }}
-                        className="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-blue-500"
+                    <div className={`h-2 rounded-full ${isDarkMode ? 'bg-gray-700' : 'bg-gray-200'}`}>
+                      <div
+                        className="h-full rounded-full bg-blue-500 transition-all duration-500"
+                        style={{ width: `${course.progress}%` }}
                       />
                     </div>
-                    <motion.button
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}
-                      className={`w-full px-4 py-2 rounded-lg font-medium ${
-                        isDarkMode 
-                          ? 'bg-blue-600 hover:bg-blue-700' 
-                          : 'bg-blue-500 hover:bg-blue-600'
-                      } text-white transition-colors duration-200`}
-                    >
-                      Continue Learning
-                    </motion.button>
                   </div>
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        </motion.div>
-
-        {/* Recommended Courses Section */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-        >
-          <h2 className="text-2xl font-bold mb-6">Recommended Courses</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {recommendedCourses.map((course, index) => (
-              <motion.div
-                key={course.id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.3 + index * 0.1 }}
-                whileHover={{ scale: 1.02 }}
-                className={`rounded-xl shadow-lg overflow-hidden ${
-                  isDarkMode ? 'bg-gray-800' : 'bg-white'
-                }`}
-              >
-                <div className="p-6">
-                  <h3 className="text-lg font-semibold mb-2">{course.title}</h3>
-                  <p className={`mb-4 ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
-                    {course.description}
-                  </p>
-                  <p className={`text-sm mb-3 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                    Instructor: {course.instructor}
-                  </p>
-                  <motion.button
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    className={`w-full px-4 py-2 rounded-lg font-medium ${
-                      isDarkMode 
-                        ? 'bg-green-600 hover:bg-green-700' 
+                )}
+                <button
+                  className={`w-full px-4 py-2 rounded-lg font-medium transition-all duration-300 ${
+                    course.progress !== undefined
+                      ? isDarkMode 
+                        ? 'bg-blue-600 hover:bg-blue-700'
+                        : 'bg-blue-500 hover:bg-blue-600'
+                      : isDarkMode
+                        ? 'bg-green-600 hover:bg-green-700'
                         : 'bg-green-500 hover:bg-green-600'
-                    } text-white transition-colors duration-200`}
-                  >
-                    Enroll Now
-                  </motion.button>
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        </motion.div>
+                  } text-white`}
+                >
+                  {course.progress !== undefined ? 'Continue Learning' : 'Enroll Now'}
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
       </main>
     </div>
   );
