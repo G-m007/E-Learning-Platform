@@ -9,9 +9,13 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@types/react-router-dom": "^5.3.3",
+    "axios": "^1.8.3",
+    "framer-motion": "^12.5.0",
+    "next": "15.2.2",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
-    "next": "15.2.2"
+    "react-router-dom": "^7.3.0"
   },
   "devDependencies": {
     "typescript": "^5",
