@@ -25,6 +25,15 @@ export default function DashboardPage() {
   const [activeTab, setActiveTab] = useState<'enrolled' | 'explore'>('enrolled');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const [userProfile, setUserProfile] = useState({
+    name: 'John Doe',
+    email: 'john.doe@example.com',
+    avatar: 'https://source.unsplash.com/random/100x100/?portrait',
+    role: 'Student',
+    enrolledCourses: 5,
+    completedCourses: 3
+  });
 
   const categories = [
     'All',
@@ -42,7 +51,7 @@ export default function DashboardPage() {
       title: "Complete Web Development Bootcamp",
       description: "Learn full-stack web development from scratch. Covers HTML, CSS, JavaScript, React, Node.js, and more.",
       instructor: "Dr. Angela Yu",
-      thumbnail: "https://source.unsplash.com/random/800x600/?coding",
+      thumbnail: "https://www.creativeitinstitute.com/images/course/course_1663052056.jpg",
       category: "Programming",
       price: 99.99,
       rating: 4.8,
@@ -56,7 +65,7 @@ export default function DashboardPage() {
       title: "UI/UX Design Masterclass",
       description: "Master the art of user interface and user experience design. Learn Figma, design principles, and more.",
       instructor: "Sarah Wilson",
-      thumbnail: "https://source.unsplash.com/random/800x600/?design",
+      thumbnail: "https://www.creative-tim.com/blog/content/images/2022/07/UX-design-courses.jpg",
       category: "Design",
       price: 89.99,
       rating: 4.7,
@@ -97,7 +106,7 @@ export default function DashboardPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16">
             <div className="flex items-center">
-              <h1 className="text-2xl font-bold">E-Learning Dashboard</h1>
+              <h1 className="text-2xl font-bold">EduTech Dashboard</h1>
             </div>
             <div className="flex items-center space-x-4">
               <button
@@ -108,19 +117,103 @@ export default function DashboardPage() {
               >
                 {isDarkMode ? '🌙' : '☀️'}
               </button>
-              <button
-                onClick={() => {
-                  authService.logout();
-                  router.push('/login');
-                }}
-                className={`px-4 py-2 rounded-lg font-medium ${
-                  isDarkMode 
-                    ? 'bg-red-600 hover:bg-red-700' 
-                    : 'bg-red-500 hover:bg-red-600'
-                } text-white transition-all duration-300 hover:scale-105`}
-              >
-                Logout
-              </button>
+              
+              {/* Profile Dropdown */}
+              <div className="relative">
+                <button
+                  onClick={() => setIsProfileOpen(!isProfileOpen)}
+                  className="flex items-center space-x-2 focus:outline-none"
+                >
+                  <img
+                    src={userProfile.avatar}
+                    alt="Profile"
+                    className="h-8 w-8 rounded-full object-cover border-2 border-blue-500 transition-transform duration-300 hover:scale-110"
+                  />
+                </button>
+
+                {/* Profile Dropdown Menu */}
+                {isProfileOpen && (
+                  <div 
+                    className={`absolute right-0 mt-2 w-72 rounded-xl shadow-lg py-1 ${
+                      isDarkMode ? 'bg-gray-800' : 'bg-white'
+                    } ring-1 ring-black ring-opacity-5 transform transition-all duration-300 origin-top-right`}
+                  >
+                    <div className="px-4 py-3">
+                      <div className="flex items-center space-x-3 mb-3">
+                        <img
+                          src={userProfile.avatar}
+                          alt="Profile"
+                          className="h-16 w-16 rounded-full object-cover border-2 border-blue-500"
+                        />
+                        <div>
+                          <div className="font-medium text-lg">{userProfile.name}</div>
+                          <div className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-500'}`}>
+                            {userProfile.email}
+                          </div>
+                          <span className={`inline-block px-2 py-1 text-xs rounded-full mt-1 ${
+                            isDarkMode ? 'bg-blue-600' : 'bg-blue-100 text-blue-800'
+                          }`}>
+                            {userProfile.role}
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className={`grid grid-cols-2 gap-2 py-2 mb-3 border-t border-b ${
+                        isDarkMode ? 'border-gray-700' : 'border-gray-200'
+                      }`}>
+                        <div className="text-center">
+                          <div className="text-lg font-semibold">{userProfile.enrolledCourses}</div>
+                          <div className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                            Enrolled
+                          </div>
+                        </div>
+                        <div className="text-center">
+                          <div className="text-lg font-semibold">{userProfile.completedCourses}</div>
+                          <div className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                            Completed
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="space-y-1">
+                        <button
+                          onClick={() => router.push('/profile')}
+                          className={`w-full text-left px-4 py-2 text-sm rounded-lg transition-colors duration-200 ${
+                            isDarkMode 
+                              ? 'hover:bg-gray-700' 
+                              : 'hover:bg-gray-100'
+                          }`}
+                        >
+                          👤 View Profile
+                        </button>
+                        <button
+                          onClick={() => router.push('/settings')}
+                          className={`w-full text-left px-4 py-2 text-sm rounded-lg transition-colors duration-200 ${
+                            isDarkMode 
+                              ? 'hover:bg-gray-700' 
+                              : 'hover:bg-gray-100'
+                          }`}
+                        >
+                          ⚙️ Settings
+                        </button>
+                        <button
+                          onClick={() => {
+                            authService.logout();
+                            router.push('/login');
+                          }}
+                          className={`w-full text-left px-4 py-2 text-sm rounded-lg text-red-500 transition-colors duration-200 ${
+                            isDarkMode 
+                              ? 'hover:bg-gray-700' 
+                              : 'hover:bg-gray-100'
+                          }`}
+                        >
+                          🚪 Logout
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </div>
